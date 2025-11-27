@@ -31,33 +31,44 @@ export function verifyToken(token: string): JWTPayload | null {
 }
 
 export async function authenticateAdmin(username: string, password: string) {
-  const admin = await prisma.adminUser.findUnique({
-    where: { username },
-  });
+  try {
+    // Check if Prisma is available (database connected)
+    if (!prisma || typeof prisma.adminUser === 'undefined') {
+      console.error('Prisma client not available - DATABASE_URL may be missing');
+      return null;
+    }
 
-  if (!admin || !admin.isActive) {
-    return null;
-  }
+    const admin = await prisma.adminUser.findUnique({
+      where: { username },
+    });
 
-  const isValid = await verifyPassword(password, admin.passwordHash);
-  if (!isValid) {
-    return null;
-  }
+    if (!admin || !admin.isActive) {
+      return null;
+    }
 
-  const token = generateToken({
-    userId: admin.id,
-    role: admin.role,
-    username: admin.username,
-  });
+    const isValid = await verifyPassword(password, admin.passwordHash);
+    if (!isValid) {
+      return null;
+    }
 
-  return {
-    admin: {
-      id: admin.id,
-      username: admin.username,
-      email: admin.email,
+    const token = generateToken({
+      userId: admin.id,
       role: admin.role,
-    },
-    token,
-  };
+      username: admin.username,
+    });
+
+    return {
+      admin: {
+        id: admin.id,
+        username: admin.username,
+        email: admin.email,
+        role: admin.role,
+      },
+      token,
+    };
+  } catch (error) {
+    console.error('Authentication error:', error);
+    return null;
+  }
 }
 

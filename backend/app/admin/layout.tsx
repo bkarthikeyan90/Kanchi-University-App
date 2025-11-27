@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
@@ -10,10 +10,20 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // Don't check auth for login page
+  const isLoginPage = pathname === '/admin/login';
+
   useEffect(() => {
+    // Skip auth check for login page
+    if (isLoginPage) {
+      setLoading(false);
+      return;
+    }
+
     const token = localStorage.getItem('adminToken');
     if (!token) {
       router.push('/admin/login');
@@ -21,7 +31,12 @@ export default function AdminLayout({
       setIsAuthenticated(true);
     }
     setLoading(false);
-  }, [router]);
+  }, [router, isLoginPage]);
+
+  // Don't wrap login page with admin layout
+  if (isLoginPage) {
+    return <>{children}</>;
+  }
 
   if (loading) {
     return (
