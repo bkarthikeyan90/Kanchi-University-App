@@ -1,0 +1,323 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Admin Users
+model AdminUser {
+  id            String   @id @default(uuid())
+  username      String   @unique
+  email         String   @unique
+  passwordHash  String
+  role          AdminRole @default(STAFF)
+  isActive      Boolean  @default(true)
+  twoFactorEnabled Boolean @default(false)
+  twoFactorSecret String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  news          News[]
+  events        Event[]
+  circulars     Circular[]
+  notifications Notification[]
+
+  @@map("admin_users")
+}
+
+enum AdminRole {
+  SUPERADMIN
+  STAFF
+}
+
+// App Users
+model AppUser {
+  id            String   @id @default(uuid())
+  email         String?  @unique
+  mobile        String?  @unique
+  name          String?
+  fcmToken      String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("app_users")
+}
+
+// News
+model News {
+  id          String   @id @default(uuid())
+  title       String
+  content     String   @db.Text
+  imageUrl    String?
+  category    String?
+  isPublished Boolean  @default(false)
+  publishedAt DateTime?
+  views       Int      @default(0)
+  authorId    String
+  author      AdminUser @relation(fields: [authorId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isPublished, publishedAt])
+  @@map("news")
+}
+
+// Events
+model Event {
+  id          String   @id @default(uuid())
+  title       String
+  description String   @db.Text
+  imageUrl    String?
+  startDate   DateTime
+  endDate     DateTime?
+  location    String?
+  category    String?
+  isPublished Boolean  @default(false)
+  publishedAt DateTime?
+  views       Int      @default(0)
+  authorId    String
+  author      AdminUser @relation(fields: [authorId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isPublished, startDate])
+  @@map("events")
+}
+
+// Circulars
+model Circular {
+  id          String   @id @default(uuid())
+  title       String
+  content     String   @db.Text
+  documentUrl String?
+  category    String?
+  targetAudience String? // ALL, DEPARTMENT, STUDENT, STAFF
+  departmentId String?
+  department    Department? @relation(fields: [departmentId], references: [id])
+  isPublished Boolean  @default(false)
+  publishedAt DateTime?
+  views       Int      @default(0)
+  authorId    String
+  author      AdminUser @relation(fields: [authorId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isPublished, publishedAt])
+  @@map("circulars")
+}
+
+// Departments
+model Department {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  code        String   @unique
+  description String?  @db.Text
+  imageUrl    String?
+  headName    String?
+  headEmail   String?
+  headPhone   String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  courses     Course[]
+  faculty     Faculty[]
+  circulars   Circular[]
+
+  @@map("departments")
+}
+
+// Courses
+model Course {
+  id            String   @id @default(uuid())
+  name          String
+  code          String
+  departmentId  String
+  department    Department @relation(fields: [departmentId], references: [id])
+  level         CourseLevel
+  duration      String?
+  description   String?  @db.Text
+  eligibility   String?  @db.Text
+  syllabusUrl   String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([code, departmentId])
+  @@map("courses")
+}
+
+enum CourseLevel {
+  UG
+  PG
+  PHD
+}
+
+// Faculty
+model Faculty {
+  id            String   @id @default(uuid())
+  name          String
+  email         String
+  phone         String?
+  designation   String
+  departmentId  String
+  department    Department @relation(fields: [departmentId], references: [id])
+  imageUrl      String?
+  bio           String?  @db.Text
+  qualifications String? @db.Text
+  researchAreas String?  @db.Text
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("faculty")
+}
+
+// Gallery
+model Gallery {
+  id          String   @id @default(uuid())
+  title       String
+  description String?  @db.Text
+  type        GalleryType
+  imageUrl    String?
+  videoUrl    String?
+  albumId     String?
+  album       GalleryAlbum? @relation(fields: [albumId], references: [id])
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([albumId, isPublished])
+  @@map("gallery")
+}
+
+enum GalleryType {
+  IMAGE
+  VIDEO
+}
+
+model GalleryAlbum {
+  id          String   @id @default(uuid())
+  title       String
+  description String?  @db.Text
+  coverImageUrl String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  items       Gallery[]
+
+  @@map("gallery_albums")
+}
+
+// Placements
+model Placement {
+  id            String   @id @default(uuid())
+  companyName  String
+  logoUrl      String?
+  description  String?  @db.Text
+  website      String?
+  isActive     Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  stats        PlacementStat[]
+
+  @@map("placements")
+}
+
+model PlacementStat {
+  id            String   @id @default(uuid())
+  placementId   String
+  placement     Placement @relation(fields: [placementId], references: [id], onDelete: Cascade)
+  year          Int
+  studentsPlaced Int
+  averagePackage String?
+  highestPackage String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([placementId, year])
+  @@map("placement_stats")
+}
+
+// Examinations
+model Examination {
+  id          String   @id @default(uuid())
+  title       String
+  description String?  @db.Text
+  examDate    DateTime?
+  timetableUrl String?
+  hallTicketUrl String?
+  resultsUrl  String?
+  departmentId String?
+  courseId    String?
+  isPublished Boolean  @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isPublished, examDate])
+  @@map("examinations")
+}
+
+// Notifications
+model Notification {
+  id          String   @id @default(uuid())
+  title       String
+  body        String   @db.Text
+  type        NotificationType
+  targetAudience String // ALL, DEPARTMENT, USER
+  departmentId String?
+  userId      String?
+  data        String?  @db.Text // JSON data
+  isSent      Boolean  @default(false)
+  sentAt      DateTime?
+  createdAt   DateTime @default(now())
+  createdBy   String
+  creator     AdminUser @relation(fields: [createdBy], references: [id])
+
+  @@index([isSent, createdAt])
+  @@map("notifications")
+}
+
+enum NotificationType {
+  NEWS
+  EVENT
+  CIRCULAR
+  EXAM
+  GENERAL
+}
+
+// Homepage Banners
+model Banner {
+  id          String   @id @default(uuid())
+  title       String
+  imageUrl    String
+  linkUrl     String?
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive, order])
+  @@map("banners")
+}
+
+// App Settings
+model AppSetting {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       String   @db.Text
+  description String?
+  updatedAt   DateTime @updatedAt
+
+  @@map("app_settings")
+}
+

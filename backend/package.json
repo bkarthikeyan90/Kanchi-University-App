@@ -1,0 +1,46 @@
+{
+  "name": "kanchi-university-backend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio",
+    "db:seed": "node scripts/seed-data.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.7.1",
+    "@supabase/supabase-js": "^2.38.5",
+    "@supabase/auth-helpers-nextjs": "^0.8.7",
+    "next": "14.0.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "zod": "^3.22.4",
+    "axios": "^1.6.2",
+    "firebase-admin": "^12.0.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-react": "^5.10.5"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/node": "^20.10.5",
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.18",
+    "prisma": "^5.7.1",
+    "typescript": "^5.3.3",
+    "tailwindcss": "^3.4.0",
+    "tailwindcss-animate": "^1.0.7",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "14.0.4"
+  }
+}
+

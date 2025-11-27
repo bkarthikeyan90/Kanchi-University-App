@@ -1,0 +1,26 @@
+{
+  "name": "kanchi-university-app",
+  "version": "1.0.0",
+  "description": "Kanchi University Official Mobile Application",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "mobile"
+  ],
+  "scripts": {
+    "dev:backend": "cd backend && npm run dev",
+    "dev:mobile": "cd mobile && npm start",
+    "build:backend": "cd backend && npm run build",
+    "build:mobile": "cd mobile && npm run build"
+  },
+  "keywords": [
+    "react-native",
+    "expo",
+    "nextjs",
+    "supabase",
+    "university-app"
+  ],
+  "author": "Kanchi University",
+  "license": "UNLICENSED"
+}
+
