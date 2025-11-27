@@ -1,6 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Ensure API routes are not statically generated
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '2mb',
+    },
+  },
+  // Disable static optimization for API routes
+  output: 'standalone',
   images: {
     domains: ['zqzfrlvqkycnasoqokzo.supabase.co'],
     remotePatterns: [
@@ -26,4 +34,3 @@ const nextConfig = {
 };
 
 module.exports = nextConfig;
-
